@@ -7,3 +7,9 @@ Elpad client is an Emacs client for Elpad, letting you create and
 update Elpads as easy as you open a buffer.
 
 
+Only one command is available right now:
+
+{{{elpad-client-get-pad}}} which takes the ID of an existing pad. 
+
+It is NOT possible to create pads or delete them yet.
+
