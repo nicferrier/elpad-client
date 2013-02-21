@@ -1,0 +1,9 @@
+= Elpad client =
+
+Elpad is a service offering live pastes. Paste some text to an Elpad,
+keep updating it, other people can see the updates *live*.
+
+Elpad client is an Emacs client for Elpad, letting you create and
+update Elpads as easy as you open a buffer.
+
+
