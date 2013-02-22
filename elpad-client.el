@@ -29,6 +29,16 @@
 (require 'websocket)
 (require 'web)
 
+(defgroup elpad-client nil
+  "Emacs client for Elpad text bin."
+  :group 'applications)
+
+(defcustom elpad-client-default-host "http://localhost:8007"
+  "The default elpad host to send pad requests to."
+  :group 'elpad-client
+  :type 'string)
+
+
 (defvar elpad-client/websocket nil
   "Buffer local copy of the websocket we're using.
 
@@ -91,7 +101,6 @@ WS-HOST passed to us by Elpad negotiation."
 
 (defun elpad-client/handle-pad (hc header data)
   "HTTP callback from the pad lookup call."
-  (message "%S" header)
   (let* ((loc (gethash 'location header))
               (server
                (progn
@@ -104,20 +113,36 @@ WS-HOST passed to us by Elpad negotiation."
 (defvar elpad/get-pad-history '()
   "History of `elpad-get' IDs.")
 
-(defun elpad-client-get-pad (id)
-  "Get a particular ID from elpad server."
+(defun elpad-client-get-pad (url)
+  "Get a particular pad by URL from the elpad server."
   (interactive
    (list
     (read-from-minibuffer
-     "Elpad id: " (car elpad/get-pad-history)
+     "Elpad url: " (car elpad/get-pad-history)
      nil nil elpad/get-pad-history)))
   (web-http-get
    (lambda (hc header data)
      (when (equal "302" (gethash 'status-code header))
        ;; We should find the header
        (elpad-client/handle-pad hc header data)))
-   :url (concat "http://localhost:8007/pad/" id "/")))
+   :url (if (string-match-p "^http://" url) url
+            (format "%s%s" elpad-client-default-host url))))
 
+(defun elpad-client-make-pad (buffer start end)
+  "Make a new elpad from BUFFER between START and END."
+  (interactive
+   (list (current-buffer)
+         (region-beginning)
+         (region-end)))
+  (web-http-post
+   (lambda (hc header data)
+     (when (equal "302" (gethash 'status-code header))
+       (elpad-client-get-pad (gethash 'location header))))
+   :url (format "%s/pad/" elpad-client-default-host)
+   :data `(("username" .  ,user-mail-address)
+           ("text" . ,(with-current-buffer
+                       buffer
+                       (buffer-substring-no-properties start end))))))
 
 (provide 'elpad-client)
 
