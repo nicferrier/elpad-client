@@ -120,6 +120,7 @@ WS-HOST passed to us by Elpad negotiation."
     (read-from-minibuffer
      "Elpad url: " (car elpad/get-pad-history)
      nil nil elpad/get-pad-history)))
+  (message "elpad-client-get-pad %s" url)
   (web-http-get
    (lambda (hc header data)
      (when (equal "302" (gethash 'status-code header))
