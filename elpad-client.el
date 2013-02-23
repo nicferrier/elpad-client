@@ -147,7 +147,11 @@ WS-HOST passed to us by Elpad negotiation."
   (interactive
    (list (current-buffer)
          (region-beginning)
-         (region-end)))
+         (region-end)
+         (when current-prefix-arg
+           (read-from-minibuffer
+            "elpad url: " nil nil nil
+            'elpad-client-elpad-url-history))))
   (web-http-post
    (lambda (hc header data)
      (when (equal "302" (gethash 'status-code header))
