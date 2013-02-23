@@ -125,10 +125,24 @@ WS-HOST passed to us by Elpad negotiation."
      (when (equal "302" (gethash 'status-code header))
        ;; We should find the header
        (elpad-client/handle-pad hc header data)))
-   :url (if (string-match-p "^http://" url) url
-            (format "%s%s" elpad-client-default-host url))))
+   :logging nil :url url))
 
-(defun elpad-client-make-pad (buffer start end)
+(defun elpad-client/redirect-correct (url base-url)
+  "Make sure URL is absolute or based on BASE-URL."
+  ;; Maybe this should go into web?
+  (if (string-match-p "^http://" url)
+      url
+      ;; Rebase on the base-url
+      (let ((burl (string-match "^\\(http://[^/]+\\)\\(/.*\\)*" base-url)))
+        (if burl
+            (concat (match-string 1 base-url) url)
+            ;; Else
+            (assert "elpad - base url should be http://...")))))
+
+(defvar elpad-client-elpad-url-history nil
+  "History of urls used as elpad hosts.")
+
+(defun elpad-client-make-pad (buffer start end &optional url)
   "Make a new elpad from BUFFER between START and END."
   (interactive
    (list (current-buffer)
@@ -137,8 +151,10 @@ WS-HOST passed to us by Elpad negotiation."
   (web-http-post
    (lambda (hc header data)
      (when (equal "302" (gethash 'status-code header))
-       (elpad-client-get-pad (gethash 'location header))))
-   :url (format "%s/pad/" elpad-client-default-host)
+       (elpad-client-get-pad
+        (elpad-client/redirect-correct (gethash 'location header)  url))))
+   :logging nil
+   :url (format "%s/pad/" (or url elpad-client-default-host))
    :data `(("username" .  ,user-mail-address)
            ("text" . ,(with-current-buffer
                        buffer
