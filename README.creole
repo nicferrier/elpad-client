@@ -40,3 +40,11 @@ same ID as in the url you used) and you should see whatever Nic has
 pasted to that url.
 
 If Nic is typing into it you should see it update dynamically.
+
+== Depends manually ==
+
+The depends as repos are:
+
+* [[https://github.com/ahyatt/emacs-websocket/|WebSocket]]
+* [[https://github.com/nicferrier/emacs-web/|Web Client]]
+* [[https://github.com/nicferrier/elpad-client/|Elpad Client]]
