@@ -13,3 +13,12 @@ Only one command is available right now:
 
 It is NOT possible to create pads or delete them yet.
 
+
+== Alpha testing ==
+
+* download this repo
+* make sure you have marmalade in your package-archives
+* open the elpad-client.el
+* M-x package-install-from-buffer
+
+Should install everything you need to try it out.
