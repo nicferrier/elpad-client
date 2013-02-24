@@ -59,9 +59,20 @@ Must be used to send updates back to the server.")
      (json-encode
       (list 'change elpad-client/uuid beg end len str)))))
 
+(defvar elpad-client/buffers (make-hash-table :test 'equal)
+  "List of the buffers we have from elpad servers.
+
+Should be kept clean up by a `elpad-client/close-buffer' hook.")
+
 (defun elpad-client/close-buffer ()
   "Hook function to clean up when a client buffer closes."
-  (websocket-close elpad-client/websocket))
+  (websocket-close elpad-client/websocket)
+  ;; Remove the buffer from the list
+  (maphash
+   (lambda (k v)
+     (equal v (current-buffer))
+     (remhash k elpad-client/buffers))
+   elpad-client/buffers))
 
 (defun elpad-client/on-message (socket frame)
   "Handle a message from a websocket.
@@ -82,12 +93,20 @@ No other messages currently processed."
              (setq elpad-client/websocket socket)
              (setq elpad-client/uuid handle)
              (insert str)
+             (puthash handle buf elpad-client/buffers)
              (add-hook
               'after-change-functions 'elpad-client/on-change t t)
              (add-hook
               'kill-buffer-hook 'elpad-client/close-buffer t t))
            ;; Make sure we change there
-           (switch-to-buffer-other-window buf)))))))
+           (switch-to-buffer-other-window buf))))
+      (sync ; updates received from other users
+       (destructuring-bind (buf-handle beg end len str) (cdr data)
+         (with-current-buffer (gethash buf-handle elpad-client/buffers)
+           (if (> len 0)
+               (delete-region beg (+ end len))
+               (goto-char beg)
+               (insert str))))))))
 
 (defun elpad-client/ws (id ws-host)
   "Connect to ID at WS-HOST.
@@ -114,6 +133,7 @@ WS-HOST passed to us by Elpad negotiation."
 (defvar elpad/get-pad-history '()
   "History of `elpad-get' IDs.")
 
+;;;###autoload
 (defun elpad-client-get-pad (url)
   "Get a particular pad by URL from the elpad server."
   (interactive
@@ -144,6 +164,7 @@ WS-HOST passed to us by Elpad negotiation."
 (defvar elpad-client-elpad-url-history nil
   "History of urls used as elpad hosts.")
 
+;;;###autoload
 (defun elpad-client-make-pad (buffer start end &optional url)
   "Make a new elpad from BUFFER between START and END."
   (interactive
