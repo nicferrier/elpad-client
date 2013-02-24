@@ -28,6 +28,7 @@
 
 (require 'websocket)
 (require 'web)
+(require 'json)
 
 (defgroup elpad-client nil
   "Emacs client for Elpad text bin."
