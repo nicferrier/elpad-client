@@ -22,3 +22,21 @@ It is NOT possible to create pads or delete them yet.
 * M-x package-install-from-buffer
 
 Should install everything you need to try it out.
+
+Now:
+
+* go here: http://elpad.elnode.org/user/nferrier@ferrier.me.uk/
+* pick a url and copy it
+* use emacs to open it like this:
+
+{{{
+M-x elpad-client-get-pad [RET] url [RET]
+}}}
+
+where //url// is what you copied from the website.
+
+You should get an {{{elpad/something}}} buffer (where something is the
+same ID as in the url you used) and you should see whatever Nic has
+pasted to that url.
+
+If Nic is typing into it you should see it update dynamically.
